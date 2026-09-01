@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_bus"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.AppCompat.DayNight">
+
+        <!--
+            Никакого LAUNCHER-интента: у плагина нет своей иконки в лаунчере.
+            Экран настроек открывается только через шестерёнку "Settings"
+            на экране "Edit Complication" внутри самого Smartspacer
+            (Smartspacer запускает эту Activity явным Intent-ом по имени класса).
+        -->
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="true"
+            android:label="Настройки ETA" />
+
+        <!-- Complication: время на машине -->
+        <provider
+            android:name=".complications.CarEtaComplication"
+            android:authorities="${applicationId}.complication.car"
+            android:permission="com.kieronquinn.app.smartspacer.permission.ACCESS_SMARTSPACER_COMPLICATIONS"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.kieronquinn.app.smartspacer.COMPLICATION" />
+            </intent-filter>
+        </provider>
+
+        <!-- Complication: время пешком -->
+        <provider
+            android:name=".complications.WalkEtaComplication"
+            android:authorities="${applicationId}.complication.walk"
+            android:permission="com.kieronquinn.app.smartspacer.permission.ACCESS_SMARTSPACER_COMPLICATIONS"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.kieronquinn.app.smartspacer.COMPLICATION" />
+            </intent-filter>
+        </provider>
+
+        <!-- Complication: время на общественном транспорте -->
+        <provider
+            android:name=".complications.TransitEtaComplication"
+            android:authorities="${applicationId}.complication.transit"
+            android:permission="com.kieronquinn.app.smartspacer.permission.ACCESS_SMARTSPACER_COMPLICATIONS"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.kieronquinn.app.smartspacer.COMPLICATION" />
+            </intent-filter>
+        </provider>
+
+        <!-- Приём периодических запросов на обновление от Smartspacer -->
+        <receiver
+            android:name=".EtaComplicationUpdateReceiver"
+            android:exported="true"
+            android:permission="com.kieronquinn.app.smartspacer.permission.SEND_UPDATE_BROADCAST">
+            <intent-filter>
+                <action android:name="com.kieronquinn.app.smartspacer.REQUEST_COMPLICATION_UPDATE" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+
+</manifest>
