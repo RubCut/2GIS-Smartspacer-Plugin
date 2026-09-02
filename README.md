@@ -31,6 +31,11 @@ the Geocoder API, or set manually as latitude and longitude.
 - Dynamic colors on Android 12+;
 - Light and dark themes;
 - English and Russian UI;
+- Per-Complication settings: each Complication keeps its own destination and
+  API key;
+- Synced default API key: a newly added Complication is pre-filled with the
+  last key you saved, and a new key entered in any Complication becomes the
+  default for future ones;
 - Destination by address or coordinates;
 - "Set up" hint right in the Complication before the first run;
 - Complication stays visible on a temporary error and shows `No ETA`;
@@ -92,7 +97,10 @@ app/build/outputs/apk/debug/app-debug.apk
 1. In Smartspacer, add one or more Complications of this plugin:
    **Driving**, **Walking**, or **Transit**.
 2. Open **More settings** on the added Complication.
-3. Paste your 2GIS API key.
+3. Paste your 2GIS API key. The key is synced between Complications: a newly
+   added Complication is pre-filled with the last key you saved, while a new
+   key entered in any Complication overwrites that default. Complications that
+   were already configured keep their own key.
 4. Choose how to specify the destination:
    - **by address** — coordinates will be resolved by the Geocoder API;
    - **coordinates** — find the place in 2GIS and enter latitude and longitude.
@@ -131,7 +139,7 @@ shorten update time.
 - saving requests a single fresh fix with a timeout;
 - background updates reuse the last known Android location;
 - the API key, address, coordinates, and ETA cache are stored locally in
-  `SharedPreferences`;
+  `SharedPreferences` — per Complication instance, plus a synced default key;
 - location and destination are sent only to the 2GIS API for route calculation.
 
 ## Project structure

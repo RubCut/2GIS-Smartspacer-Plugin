@@ -5,7 +5,7 @@
     <string name="settings_subtitle">Плагин показывает время в пути до выбранного места в Smartspacer.</string>
     <string name="destination_section_title">Пункт назначения</string>
     <string name="api_key_label">API-ключ 2ГИС</string>
-    <string name="api_key_helper">Ключ с доступом к Routing и Geocoder API</string>
+    <string name="api_key_helper">Ключ с доступом к Routing и Geocoder API. Новый ключ, сохранённый в любой Complication, станет дефолтным для новых.</string>
     <string name="address_label">Адрес</string>
     <string name="address_helper">Например: Москва, Тверская улица, 1</string>
     <string name="get_api_key">Получить ключ</string>
