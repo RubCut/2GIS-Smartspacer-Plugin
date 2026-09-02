@@ -19,10 +19,9 @@ The plugin adds three Complication providers to [Smartspacer](https://github.com
 that show ETA via the 2GIS API:
 
 - 🚗 by car;
-- 🚶 on foot;
-- 🚌 on public transport.
+- 🚶 on foot
 
-All three modes share the same destination. It can be looked up by address through
+All two modes share the same destination. It can be looked up by address through
 the Geocoder API, or set manually as latitude and longitude.
 
 ## Features
