@@ -25,15 +25,7 @@ jobs:
           gradle-version: '8.9'
 
       - name: Build debug APK
-        run: gradle assembleDebug --stacktrace 2>&1 | tee build.log; exit ${PIPESTATUS[0]}
-
-      - name: Report compile errors (temporary debug step)
-        if: failure()
-        run: |
-          grep -E "^e: |error: |Caused by|FAILURE: Build" build.log | head -30 | while IFS= read -r line; do
-            echo "::error::${line:0:4000}"
-          done
-          test -f build.log || echo "::error::no build.log captured"
+        run: gradle assembleDebug
 
       - uses: actions/upload-artifact@v4
         with:
