@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
+import org.json.JSONTokener
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
@@ -39,8 +40,8 @@ class TwoGisClient(private val apiKey: String) {
     /** Геокодирование адреса в координаты. Возвращает null при ошибке. */
     suspend fun geocode(address: String): GeoPoint? = withContext(Dispatchers.IO) {
         try {
-            val q = URLEncoder.encode(address, "UTF-8")
-            val url = "$GEOCODE_URL?q=$q&fields=items.point&key=${apiKey}"
+            val q = encode(address)
+            val url = "$GEOCODE_URL?q=$q&fields=items.point&key=${encode(apiKey)}"
             val response = httpGet(url) ?: return@withContext null
             val json = JSONObject(response)
             val items = json.optJSONObject("result")?.optJSONArray("items") ?: return@withContext null
@@ -65,19 +66,19 @@ class TwoGisClient(private val apiKey: String) {
             val body = JSONObject().apply {
                 put("points", JSONArray().apply {
                     put(JSONObject().apply {
-                        put("type", "stop"); put("lat", from.lat); put("lon", from.lon)
+                        put("type", "walking"); put("lat", from.lat); put("lon", from.lon)
                     })
                     put(JSONObject().apply {
-                        put("type", "stop"); put("lat", to.lat); put("lon", to.lon)
+                        put("type", "walking"); put("lat", to.lat); put("lon", to.lon)
                     })
                 })
                 put("transport", transport)
                 put("output", "summary")
                 put("locale", "ru")
             }
-            val url = "$ROUTING_URL?key=$apiKey"
+            val url = "$ROUTING_URL?key=${encode(apiKey)}"
             val response = httpPost(url, body.toString()) ?: return@withContext null
-            findFirstDuration(JSONObject(response))
+            findFirstDuration(JSONTokener(response).nextValue())
         } catch (e: Exception) {
             Log.w(TAG, "routeDuration failed", e)
             null
@@ -94,10 +95,20 @@ class TwoGisClient(private val apiKey: String) {
                     put("point", JSONObject().apply { put("lat", to.lat); put("lon", to.lon) })
                 })
                 put("locale", "ru")
+                put("transport", JSONArray().apply {
+                    listOf(
+                        "pedestrian", "metro", "light_metro", "suburban_train",
+                        "aeroexpress", "tram", "bus", "trolleybus", "shuttle_bus",
+                        "monorail", "funicular_railway", "river_transport", "cable_car",
+                        "light_rail", "premetro", "mcc", "mcd"
+                    ).forEach(::put)
+                })
+                put("max_result_count", 1)
             }
-            val url = "$TRANSIT_URL?key=$apiKey"
+            val url = "$TRANSIT_URL?key=${encode(apiKey)}"
             val response = httpPost(url, body.toString()) ?: return@withContext null
-            findFirstDuration(JSONObject(response))
+            // Public Transport API returns a root JSON array, unlike Routing API.
+            findFirstDuration(JSONTokener(response).nextValue())
         } catch (e: Exception) {
             Log.w(TAG, "transitDuration failed", e)
             null
@@ -166,11 +177,16 @@ class TwoGisClient(private val apiKey: String) {
     private fun readResponse(connection: HttpURLConnection): String? {
         val code = connection.responseCode
         val stream = if (code in 200..299) connection.inputStream else connection.errorStream
-        val text = BufferedReader(InputStreamReader(stream, StandardCharsets.UTF_8)).use { it.readText() }
+        val text = stream?.let {
+            BufferedReader(InputStreamReader(it, StandardCharsets.UTF_8)).use { reader -> reader.readText() }
+        }.orEmpty()
         if (code !in 200..299) {
             Log.w(TAG, "HTTP $code: $text")
             return null
         }
-        return text
+        return text.takeIf(String::isNotBlank)
     }
+
+    private fun encode(value: String): String =
+        URLEncoder.encode(value, StandardCharsets.UTF_8.name())
 }

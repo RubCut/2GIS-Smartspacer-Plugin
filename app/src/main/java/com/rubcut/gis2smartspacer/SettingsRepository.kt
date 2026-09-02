@@ -3,11 +3,7 @@ package com.rubcut.gis2smartspacer
 import android.content.Context
 import android.content.SharedPreferences
 
-/**
- * Простая обёртка над SharedPreferences.
- * Все чтения тут синхронные и быстрые, поэтому их можно безопасно
- * дёргать прямо из getSmartspaceActions() у Complication-провайдеров.
- */
+/** Быстрое синхронное хранилище настроек и последнего результата ETA. */
 class SettingsRepository(context: Context) {
 
     private val prefs: SharedPreferences =
@@ -21,45 +17,79 @@ class SettingsRepository(context: Context) {
         get() = prefs.getString(Constants.KEY_DEST_ADDRESS, "") ?: ""
         set(value) = prefs.edit().putString(Constants.KEY_DEST_ADDRESS, value).apply()
 
-    var destLat: Double
-        get() = prefs.getFloat(Constants.KEY_DEST_LAT, 0f).toDouble()
-        set(value) = prefs.edit().putFloat(Constants.KEY_DEST_LAT, value.toFloat()).apply()
+    val destLat: Double
+        get() = readCoordinate(Constants.KEY_DEST_LAT)
 
-    var destLon: Double
-        get() = prefs.getFloat(Constants.KEY_DEST_LON, 0f).toDouble()
-        set(value) = prefs.edit().putFloat(Constants.KEY_DEST_LON, value.toFloat()).apply()
+    val destLon: Double
+        get() = readCoordinate(Constants.KEY_DEST_LON)
 
     val hasDestination: Boolean
-        get() = destLat != 0.0 && destLon != 0.0
+        get() = prefs.contains(Constants.KEY_DEST_LAT) && prefs.contains(Constants.KEY_DEST_LON)
 
     val isConfigured: Boolean
         get() = apiKey.isNotBlank() && hasDestination
 
-    fun setEtaMinutes(mode: TravelMode, minutes: Int?) {
-        val key = when (mode) {
-            TravelMode.DRIVING -> Constants.KEY_CAR_MINUTES
-            TravelMode.WALKING -> Constants.KEY_WALK_MINUTES
-            TravelMode.TRANSIT -> Constants.KEY_TRANSIT_MINUTES
-        }
+    val usesManualCoordinates: Boolean
+        get() = prefs.getBoolean(Constants.KEY_MANUAL_COORDINATES, false)
+
+    /** Сохраняет согласованный набор адреса и координат и сбрасывает старые ETA. */
+    fun saveDestination(
+        apiKey: String,
+        address: String,
+        point: GeoPoint,
+        manualCoordinates: Boolean = false
+    ) {
+        prefs.edit()
+            .putString(Constants.KEY_API_KEY, apiKey)
+            .putString(Constants.KEY_DEST_ADDRESS, address)
+            .putLong(Constants.KEY_DEST_LAT, point.lat.toBits())
+            .putLong(Constants.KEY_DEST_LON, point.lon.toBits())
+            .putBoolean(Constants.KEY_MANUAL_COORDINATES, manualCoordinates)
+            .remove(Constants.KEY_CAR_MINUTES)
+            .remove(Constants.KEY_WALK_MINUTES)
+            .remove(Constants.KEY_TRANSIT_MINUTES)
+            .remove(Constants.KEY_LAST_UPDATE_TS)
+            .apply()
+    }
+
+    /** Атомарно обновляет все запрошенные режимы и время успешного обновления. */
+    fun setEtaResults(results: Map<TravelMode, Int?>) {
         val editor = prefs.edit()
-        if (minutes == null) {
-            editor.remove(key)
-        } else {
-            editor.putInt(key, minutes)
+        var hasSuccess = false
+        results.forEach { (mode, minutes) ->
+            val key = etaKey(mode)
+            if (minutes == null) {
+                editor.remove(key)
+            } else {
+                editor.putInt(key, minutes)
+                hasSuccess = true
+            }
         }
-        editor.putLong(Constants.KEY_LAST_UPDATE_TS, System.currentTimeMillis())
+        if (hasSuccess) editor.putLong(Constants.KEY_LAST_UPDATE_TS, System.currentTimeMillis())
         editor.apply()
     }
 
     fun getEtaMinutes(mode: TravelMode): Int? {
-        val key = when (mode) {
-            TravelMode.DRIVING -> Constants.KEY_CAR_MINUTES
-            TravelMode.WALKING -> Constants.KEY_WALK_MINUTES
-            TravelMode.TRANSIT -> Constants.KEY_TRANSIT_MINUTES
-        }
+        val key = etaKey(mode)
         return if (prefs.contains(key)) prefs.getInt(key, -1).takeIf { it >= 0 } else null
     }
 
     val lastUpdateTimestamp: Long
         get() = prefs.getLong(Constants.KEY_LAST_UPDATE_TS, 0L)
+
+    private fun etaKey(mode: TravelMode) = when (mode) {
+        TravelMode.DRIVING -> Constants.KEY_CAR_MINUTES
+        TravelMode.WALKING -> Constants.KEY_WALK_MINUTES
+        TravelMode.TRANSIT -> Constants.KEY_TRANSIT_MINUTES
+    }
+
+    /** Читает новый lossless Double и сохраняет совместимость с версией 1 (Float). */
+    private fun readCoordinate(key: String): Double {
+        if (!prefs.contains(key)) return 0.0
+        return try {
+            Double.fromBits(prefs.getLong(key, 0L))
+        } catch (_: ClassCastException) {
+            prefs.getFloat(key, 0f).toDouble()
+        }
+    }
 }

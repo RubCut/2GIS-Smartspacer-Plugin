@@ -5,12 +5,14 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ic_bus"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
-        android:theme="@style/Theme.AppCompat.DayNight">
+        android:theme="@style/Theme.Gis2Smartspacer">
 
         <!--
             Никакого LAUNCHER-интента: у плагина нет своей иконки в лаунчере.
@@ -21,7 +23,7 @@
         <activity
             android:name=".SettingsActivity"
             android:exported="true"
-            android:label="Настройки ETA" />
+            android:label="@string/settings_activity_label" />
 
         <!-- Complication: время на машине -->
         <provider

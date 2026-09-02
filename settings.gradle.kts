@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "SmartspacerYandexEta"
+rootProject.name = "2GisSmartspacerPlugin"
 include(":app")
