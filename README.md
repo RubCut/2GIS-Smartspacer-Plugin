@@ -22,7 +22,7 @@ that show ETA via the 2GIS API:
 - 🚶 on foot;
 - 🚍 using public transport
 
-All two modes share the same destination. It can be looked up by address through
+All three modes share the same destination. It can be looked up by address through
 the Geocoder API, or set manually as latitude and longitude.
 
 ## Features
