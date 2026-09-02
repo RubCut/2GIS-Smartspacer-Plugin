@@ -10,7 +10,7 @@ object EtaUpdater {
 
     suspend fun refresh(
         context: Context,
-        settings: SettingsRepository,
+        settings: ComplicationSettings,
         modes: Set<TravelMode> = TravelMode.values().toSet()
     ): Boolean {
         if (!settings.isConfigured || modes.isEmpty()) return false
@@ -20,7 +20,7 @@ object EtaUpdater {
 
     suspend fun refreshFrom(
         origin: GeoPoint,
-        settings: SettingsRepository,
+        settings: ComplicationSettings,
         modes: Set<TravelMode> = TravelMode.values().toSet()
     ): Boolean = coroutineScope {
         val destination = GeoPoint(settings.destLat, settings.destLon)

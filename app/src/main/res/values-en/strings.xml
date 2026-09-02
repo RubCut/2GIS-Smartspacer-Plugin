@@ -5,7 +5,7 @@
     <string name="settings_subtitle">The plugin shows travel time to a selected place in Smartspacer.</string>
     <string name="destination_section_title">Destination</string>
     <string name="api_key_label">2GIS API key</string>
-    <string name="api_key_helper">A key with access to Routing and Geocoder APIs</string>
+    <string name="api_key_helper">A key with access to Routing and Geocoder APIs. A new key saved in any Complication becomes the default for new ones.</string>
     <string name="address_label">Address</string>
     <string name="address_helper">For example: London, 10 Downing Street</string>
     <string name="get_api_key">Get a key</string>

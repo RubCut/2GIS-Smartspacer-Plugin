@@ -9,15 +9,40 @@
   - `EtaComplicationUpdateReceiver` — `BroadcastReceiver` entry point invoked by Smartspacer.
   - `BaseEtaComplication` — base class shared by all three Complications (car / walk / bus).
   - `LocationHelper` — provides device location or falls back to manual coordinates.
-  - `SettingsRepository` — DataStore-backed user settings (manual coords, selected transport, etc.).
-  - `Constants` — API keys, endpoint paths, update intervals.
+  - `SettingsRepository` — SharedPreferences-backed settings: the synced default
+    API key (`defaultApiKey`) plus per-Complication-instance storage
+    (`ComplicationSettings`, keyed by the Smartspacer `smartspacerId`).
+  - `Constants` — pref keys, endpoint authorities, update intervals.
 
 ## 2GIS API logic
 
 - Endpoint: 2GIS Routing API. Transport type is selected per Complication (car, walk, bus).
 - Both endpoints nest `duration` differently, so the parser must traverse either response shape.
 - Parallel requests for each transport are kept independent to stay within the `BroadcastReceiver` time limit.
-- API key is read from `Constants` and passed via query parameter.
+- Each Complication instance has its own API key (`ComplicationSettings.apiKey`),
+  passed via query parameter.
+
+## API key synchronization
+
+- Every Complication instance (identified by Smartspacer's `smartspacerId`)
+  stores its own key, destination, and ETA cache under `inst_<id>_*` prefs keys.
+- `SettingsRepository.defaultApiKey` is the synced default: the settings screen
+  pre-fills the key field with it for instances that have no key of their own,
+  so a newly added Complication is ready to go.
+- Saving a key that differs from the instance's previous key overwrites
+  `defaultApiKey` — that key becomes the default for future Complications.
+  Existing instances keep their own stored key.
+- Migration from versions <= 2.4 (shared settings): on first access an instance
+  snapshots the legacy shared blob (`api_key_2gis`, destination, ETA cache), so
+  already added Complications keep working. The legacy blob is deleted after
+  the first save, so instances created later start fresh (only the key is
+  pre-filled from the default).
+- `SettingsActivity` receives `SmartspacerConstants.EXTRA_SMARTSPACER_ID` and
+  `EXTRA_AUTHORITY` from Smartspacer (both on add and on "More settings") and
+  edits exactly that instance; without extras it falls back to
+  `Constants.FALLBACK_COMPLICATION_ID`.
+- `onProviderRemoved(smartspacerId)` deletes the instance's stored settings
+  (`SettingsRepository.clearComplication`).
 
 ## Three Complications
 
@@ -43,7 +68,8 @@ Each one renders the ETA on the Smartspacer surface and triggers a tap action th
 - Android Gradle Plugin compatible with Kotlin 1.9+.
 - `compileSdk` / `targetSdk` per `app/build.gradle.kts`.
 - Min SDK as declared in the manifest.
-- 2GIS API key (set in `Constants.kt` or as a `BuildConfig` field, depending on configuration).
+- 2GIS API key is entered per Complication in the settings screen; the synced
+  default lives in SharedPreferences (no key is hardcoded).
 
 ## Unfinished / pending actions
 

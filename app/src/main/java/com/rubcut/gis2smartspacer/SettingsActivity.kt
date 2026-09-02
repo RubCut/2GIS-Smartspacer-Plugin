@@ -25,6 +25,7 @@ import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.kieronquinn.app.smartspacer.sdk.SmartspacerConstants
 import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerComplicationProvider
 import com.rubcut.gis2smartspacer.complications.CarEtaComplication
 import com.rubcut.gis2smartspacer.complications.TransitEtaComplication
@@ -36,6 +37,9 @@ import java.util.Date
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var settingsRepository: SettingsRepository
+    private lateinit var complicationSettings: ComplicationSettings
+    private lateinit var smartspacerId: String
+    private var complicationAuthority: String? = null
     private lateinit var apiKeyField: TextInputEditText
     private lateinit var addressField: TextInputEditText
     private lateinit var apiKeyLayout: TextInputLayout
@@ -76,16 +80,24 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         settingsRepository = SettingsRepository(this)
-        if (settingsRepository.isConfigured) setResult(Activity.RESULT_OK)
+        // Smartspacer passes the instance being configured; fall back to a
+        // shared pseudo-instance when opened without the extras.
+        smartspacerId = intent.getStringExtra(SmartspacerConstants.EXTRA_SMARTSPACER_ID)
+            ?: Constants.FALLBACK_COMPLICATION_ID
+        complicationAuthority = intent.getStringExtra(SmartspacerConstants.EXTRA_AUTHORITY)
+        // Settings belong to this exact Complication instance.
+        complicationSettings = settingsRepository.forComplication(smartspacerId)
+        if (complicationSettings.isConfigured) setResult(Activity.RESULT_OK)
         bindViews()
         applySystemBarInsets()
-        apiKeyField.setText(settingsRepository.apiKey)
-        addressField.setText(settingsRepository.destAddress)
-        if (settingsRepository.hasDestination) {
-            latitudeField.setText(settingsRepository.destLat.toString())
-            longitudeField.setText(settingsRepository.destLon.toString())
+        // A Complication without its own key starts from the synced default.
+        apiKeyField.setText(complicationSettings.apiKey.ifBlank { settingsRepository.defaultApiKey })
+        addressField.setText(complicationSettings.destAddress)
+        if (complicationSettings.hasDestination) {
+            latitudeField.setText(complicationSettings.destLat.toString())
+            longitudeField.setText(complicationSettings.destLon.toString())
         }
-        val initialMode = if (settingsRepository.usesManualCoordinates) {
+        val initialMode = if (complicationSettings.usesManualCoordinates) {
             R.id.coordinatesModeButton
         } else {
             R.id.addressModeButton
@@ -158,6 +170,7 @@ class SettingsActivity : AppCompatActivity() {
                 longitude == null || longitude !in -180.0..180.0))
         ) return
 
+        val previousApiKey = complicationSettings.apiKey
         setBusy(true)
         showStatus(R.string.status_geocoding_title, R.string.status_geocoding, loading = true)
         lifecycleScope.launch {
@@ -181,14 +194,19 @@ class SettingsActivity : AppCompatActivity() {
             } else {
                 address
             }
-            settingsRepository.saveDestination(
+            complicationSettings.saveDestination(
                 apiKey,
                 destinationName,
                 point,
                 manualCoordinates = manual
             )
+            if (apiKey != previousApiKey) {
+                // A new key entered in this Complication becomes the synced
+                // default that newly added Complications are pre-filled with.
+                settingsRepository.defaultApiKey = apiKey
+            }
             setResult(Activity.RESULT_OK)
-            notifyAllComplications()
+            notifyComplication()
 
             if (!LocationHelper.hasForegroundPermission(this@SettingsActivity)) {
                 setBusy(false)
@@ -201,7 +219,7 @@ class SettingsActivity : AppCompatActivity() {
 
             showStatus(R.string.status_refreshing_title, R.string.status_refreshing, loading = true)
             val origin = LocationHelper.getCurrentLocation(this@SettingsActivity)
-            val updated = origin != null && EtaUpdater.refreshFrom(origin, settingsRepository)
+            val updated = origin != null && EtaUpdater.refreshFrom(origin, complicationSettings)
             setBusy(false)
             if (origin != null && !updated) {
                 showStatus(
@@ -212,26 +230,26 @@ class SettingsActivity : AppCompatActivity() {
             } else {
                 showStoredStatus(updated)
             }
-            notifyAllComplications()
+            notifyComplication()
             Toast.makeText(this@SettingsActivity, R.string.saved_message, Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun showStoredStatus(justUpdated: Boolean = false) {
-        if (!settingsRepository.hasDestination) {
+        if (!complicationSettings.hasDestination) {
             showStatus(R.string.status_not_configured_title, R.string.status_not_configured)
             return
         }
-        val address = if (settingsRepository.usesManualCoordinates) {
+        val address = if (complicationSettings.usesManualCoordinates) {
             getString(
                 R.string.manual_destination,
-                settingsRepository.destLat,
-                settingsRepository.destLon
+                complicationSettings.destLat,
+                complicationSettings.destLon
             )
         } else {
-            settingsRepository.destAddress
+            complicationSettings.destAddress
         }
-        val lastUpdate = settingsRepository.lastUpdateTimestamp
+        val lastUpdate = complicationSettings.lastUpdateTimestamp
         if (lastUpdate > 0L || justUpdated) {
             val time = DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(lastUpdate))
             showStatus(
@@ -355,9 +373,30 @@ class SettingsActivity : AppCompatActivity() {
         locationButton.isEnabled = !hasForeground || !hasBackground
     }
 
-    private fun notifyAllComplications() {
-        SmartspacerComplicationProvider.notifyChange(this, CarEtaComplication::class.java)
-        SmartspacerComplicationProvider.notifyChange(this, WalkEtaComplication::class.java)
-        SmartspacerComplicationProvider.notifyChange(this, TransitEtaComplication::class.java)
+    private fun notifyComplication() {
+        // Refresh only the instance that was edited; the authority extra tells
+        // which provider owns it.
+        when (complicationAuthority) {
+            Constants.AUTHORITY_CAR -> SmartspacerComplicationProvider.notifyChange(
+                this, CarEtaComplication::class.java, smartspacerId
+            )
+            Constants.AUTHORITY_WALK -> SmartspacerComplicationProvider.notifyChange(
+                this, WalkEtaComplication::class.java, smartspacerId
+            )
+            Constants.AUTHORITY_TRANSIT -> SmartspacerComplicationProvider.notifyChange(
+                this, TransitEtaComplication::class.java, smartspacerId
+            )
+            else -> {
+                SmartspacerComplicationProvider.notifyChange(
+                    this, CarEtaComplication::class.java, smartspacerId
+                )
+                SmartspacerComplicationProvider.notifyChange(
+                    this, WalkEtaComplication::class.java, smartspacerId
+                )
+                SmartspacerComplicationProvider.notifyChange(
+                    this, TransitEtaComplication::class.java, smartspacerId
+                )
+            }
+        }
     }
 }

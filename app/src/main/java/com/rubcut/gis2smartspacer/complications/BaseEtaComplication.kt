@@ -2,13 +2,15 @@ package com.rubcut.gis2smartspacer.complications
 
 import android.content.Intent
 import android.graphics.drawable.Icon as AndroidIcon
+import com.kieronquinn.app.smartspacer.sdk.SmartspacerConstants
 import com.kieronquinn.app.smartspacer.sdk.model.SmartspaceAction
 import com.kieronquinn.app.smartspacer.sdk.model.uitemplatedata.Icon
 import com.kieronquinn.app.smartspacer.sdk.model.uitemplatedata.Text
 import com.kieronquinn.app.smartspacer.sdk.model.uitemplatedata.TapAction
 import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerComplicationProvider
-import com.kieronquinn.app.smartspacer.sdk.utils.ComplicationTemplate
 import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerComplicationProvider.Config
+import com.kieronquinn.app.smartspacer.sdk.utils.ComplicationTemplate
+import com.rubcut.gis2smartspacer.Constants
 import com.rubcut.gis2smartspacer.SettingsActivity
 import com.rubcut.gis2smartspacer.SettingsRepository
 import com.rubcut.gis2smartspacer.TravelMode
@@ -20,7 +22,8 @@ abstract class BaseEtaComplication(
 
     override fun getSmartspaceActions(smartspacerId: String): List<SmartspaceAction> {
         val context = provideContext()
-        val settings = SettingsRepository(context)
+        // Settings belong to this exact Complication instance.
+        val settings = SettingsRepository(context).forComplication(smartspacerId)
         val minutes = settings.getEtaMinutes(mode)
         val content = when {
             !settings.isConfigured -> context.getString(
@@ -38,7 +41,13 @@ abstract class BaseEtaComplication(
                 icon = Icon(AndroidIcon.createWithResource(context, iconRes), shouldTint = true),
                 content = Text(content),
                 onClick = TapAction(
-                    intent = Intent(context, SettingsActivity::class.java)
+                    intent = Intent(context, SettingsActivity::class.java).apply {
+                        putExtra(SmartspacerConstants.EXTRA_SMARTSPACER_ID, smartspacerId)
+                        putExtra(
+                            SmartspacerConstants.EXTRA_AUTHORITY,
+                            Constants.authorityForMode(mode)
+                        )
+                    }
                 )
             ).create()
         )
@@ -85,6 +94,7 @@ abstract class BaseEtaComplication(
     }
 
     override fun onProviderRemoved(smartspacerId: String) {
-        // Settings are shared across all three Complications, so nothing to clean up here.
+        // The removed instance's settings are useless now — drop them.
+        SettingsRepository(provideContext()).clearComplication(smartspacerId)
     }
 }
