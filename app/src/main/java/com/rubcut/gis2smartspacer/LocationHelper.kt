@@ -44,7 +44,6 @@ object LocationHelper {
             ?.toGeoPoint()
     }
 
-    /** Получает свежую точку на открытом экране, с безопасным таймаутом и fallback на кэш. */
     @SuppressLint("MissingPermission")
     suspend fun getCurrentLocation(context: Context): GeoPoint? {
         if (!hasForegroundPermission(context)) return null

@@ -17,15 +17,13 @@ import java.nio.charset.StandardCharsets
 data class GeoPoint(val lat: Double, val lon: Double)
 
 /**
- * Обёртка над публичными cloud-эндпоинтами 2ГИС:
- *  - Geocoder API (catalog.api.2gis.com/3.0/items/geocode)
- *  - Routing API v7 (routing.api.2gis.com/routing/7.0.0/global) — авто и пешком
- *  - Public Transport API v2 (routing.api.2gis.com/public_transport/2.0) — транспорт
+ * Thin wrapper around the public 2GIS cloud endpoints:
+ *  - Geocoder API        (catalog.api.2gis.com/3.0/items/geocode)
+ *  - Routing API v7      (routing.api.2gis.com/routing/7.0.0/global)        — driving, walking
+ *  - Public Transport v2 (routing.api.2gis.com/public_transport/2.0)      — transit
  *
- * Важно: точные названия полей в ответе Public Transport API стоит сверить
- * с актуальным API Reference на docs.2gis.com — здесь используется
- * отказоустойчивый разбор (ищем поле total_duration в любом месте ответа),
- * чтобы не сломаться при мелких отличиях схемы.
+ * Public Transport API field names should be cross-checked against the current
+ * API Reference on docs.2gis.com; parsing here is defensive.
  */
 class TwoGisClient(private val apiKey: String) {
 
@@ -37,7 +35,6 @@ class TwoGisClient(private val apiKey: String) {
         private const val TIMEOUT_MS = 15000
     }
 
-    /** Геокодирование адреса в координаты. Возвращает null при ошибке. */
     suspend fun geocode(address: String): GeoPoint? = withContext(Dispatchers.IO) {
         try {
             val q = encode(address)
@@ -54,7 +51,6 @@ class TwoGisClient(private val apiKey: String) {
         }
     }
 
-    /** Время в пути в секундах для авто/пешком через /routing/7.0.0/global. */
     suspend fun routeDuration(
         mode: TravelMode,
         from: GeoPoint,
@@ -115,11 +111,7 @@ class TwoGisClient(private val apiKey: String) {
         }
     }
 
-    /**
-     * Рекурсивно ищет первое числовое поле "total_duration" (или "duration")
-     * в произвольно вложенном JSON-ответе — так код переживёт небольшие
-     * отличия схемы между /routing и /public_transport.
-     */
+    // Both endpoints nest duration differently, so traverse either response shape.
     private fun findFirstDuration(json: Any?): Int? {
         when (json) {
             is JSONObject -> {

@@ -6,7 +6,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlin.math.ceil
 
-/** Общая логика обновления для фонового ресивера и экрана настроек. */
 object EtaUpdater {
 
     suspend fun refresh(
@@ -27,7 +26,7 @@ object EtaUpdater {
         val destination = GeoPoint(settings.destLat, settings.destLon)
         val client = TwoGisClient(settings.apiKey)
 
-        // Запросы независимы: параллельное выполнение укладывается в лимит BroadcastReceiver.
+        // Keep independent requests parallel to stay within the BroadcastReceiver time limit.
         val results = modes.map { mode ->
             async {
                 val minutes = client.routeDuration(mode, origin, destination)

@@ -1,10 +1,12 @@
+**English** · [Русский](README_RU.md)
+
 <div align="center">
 
-<img src="docs/icon.svg" width="112" alt="Иконка 2ГИС ETA для Smartspacer">
+<img src="docs/icon.svg" width="112" alt="2GIS ETA Smartspacer icon">
 
-# 2ГИС ETA для Smartspacer
+# 2GIS ETA for Smartspacer
 
-**Время в пути до выбранного места — прямо в Smartspacer**
+**Travel time to your chosen destination — right inside Smartspacer**
 
 [![Build APK](https://github.com/RubCut/2GIS-Smartspacer-Plugin/actions/workflows/build.yml/badge.svg)](https://github.com/RubCut/2GIS-Smartspacer-Plugin/actions/workflows/build.yml)
 ![Android 10+](https://img.shields.io/badge/Android-10%2B-3DDC84?logo=android&logoColor=white)
@@ -13,64 +15,65 @@
 
 </div>
 
-Плагин добавляет в [Smartspacer](https://github.com/KieronQuinn/Smartspacer) три
-Complication с расчётом ETA через API 2ГИС:
+The plugin adds three Complication providers to [Smartspacer](https://github.com/KieronQuinn/Smartspacer)
+that show ETA via the 2GIS API:
 
-- 🚗 на автомобиле;
-- 🚶 пешком;
-- 🚌 на общественном транспорте.
+- 🚗 by car;
+- 🚶 on foot;
+- 🚌 on public transport.
 
-Все три режима используют общий пункт назначения. Его можно найти по адресу через
-Geocoder API или задать вручную широтой и долготой.
+All three modes share the same destination. It can be looked up by address through
+the Geocoder API, or set manually as latitude and longitude.
 
-## Возможности
+## Features
 
-- современный экран настроек в стиле Material 3;
-- динамические цвета на Android 12+;
-- светлая и тёмная темы;
-- интерфейс на русском и английском языках;
-- выбор назначения по адресу или координатам;
-- подсказка «Настроить» прямо в Complication до первого запуска;
-- Complication остаётся видимой при временной ошибке и показывает `Нет ETA`;
-- быстрый переход к карте и Platform Manager 2ГИС;
-- немедленный расчёт ETA после сохранения;
-- автоматическое обновление каждые 15 минут;
-- параллельный расчёт автомобильного, пешего и транспортного маршрутов;
-- отсутствие постоянного отслеживания геолокации.
+- Modern Material 3 settings screen;
+- Dynamic colors on Android 12+;
+- Light and dark themes;
+- English and Russian UI;
+- Destination by address or coordinates;
+- "Set up" hint right in the Complication before the first run;
+- Complication stays visible on a temporary error and shows `No ETA`;
+- Quick jump to the 2GIS map and Platform Manager;
+- Immediate ETA calculation after saving;
+- Automatic refresh every 15 minutes;
+- Parallel calculation of driving, walking, and transit routes;
+- No continuous location tracking.
 
-## Требования
+## Requirements
 
-- Android 10 или новее;
-- установленный Smartspacer;
-- API-ключ 2ГИС с доступом к:
+- Android 10 or newer;
+- Smartspacer installed;
+- A 2GIS API key with access to:
   - [Routing API](https://docs.2gis.com/api/navigation/routing/overview);
   - Public Transport API;
   - [Geocoder API](https://docs.2gis.com/api/search/geocoder/overview).
 
-> API 2ГИС может быть платным и иметь ограничения по количеству запросов.
-> Проверьте актуальные тарифы и квоты в Platform Manager перед использованием.
+> The 2GIS API may be paid and may have request rate limits. Check the current
+> pricing and quotas in Platform Manager before use.
 
-## Получение API-ключа
+## Getting an API key
 
-1. Откройте [Platform Manager 2ГИС](https://platform.2gis.ru/).
-2. Создайте проект и ключ.
-3. Подключите Routing API, Public Transport API и Geocoder API.
-4. Скопируйте ключ в настройки плагина.
+1. Open [2GIS Platform Manager](https://platform.2gis.ru/).
+2. Create a project and a key.
+3. Enable Routing API, Public Transport API, and Geocoder API.
+4. Paste the key into the plugin settings.
 
-Ссылки на Platform Manager и документацию также доступны прямо на экране настроек.
+Links to Platform Manager and the docs are also available directly from the
+settings screen.
 
-## Установка
+## Installation
 
-### Готовая debug-сборка
+### Prebuilt debug build
 
-1. Откройте последнюю успешную сборку в разделе
+1. Open the latest successful run in
    [Actions](https://github.com/RubCut/2GIS-Smartspacer-Plugin/actions/workflows/build.yml).
-2. Скачайте артефакт `gis2smartspacer-debug-apk`.
-3. Распакуйте архив и установите APK на телефон.
+2. Download the `gis2smartspacer-debug-apk` artifact.
+3. Unpack the archive and install the APK on your phone.
 
-### Сборка из исходников
+### Building from sources
 
-Требуются JDK 17, Android SDK 35 и Gradle 8.9.
+Requires JDK 17, Android SDK 35, and Gradle 8.9.
 
 ```bash
 git clone https://github.com/RubCut/2GIS-Smartspacer-Plugin.git
@@ -78,68 +81,69 @@ cd 2GIS-Smartspacer-Plugin
 gradle assembleDebug
 ```
 
-APK появится в каталоге:
+The APK will be in:
 
 ```text
 app/build/outputs/apk/debug/app-debug.apk
 ```
 
-## Настройка
+## Configuration
 
-1. В Smartspacer добавьте одну или несколько Complication этого плагина:
-   **Driving**, **Walking** или **Transit**.
-2. Откройте **More settings** у добавленной Complication.
-3. Вставьте API-ключ 2ГИС.
-4. Выберите способ задания назначения:
-   - **по адресу** — координаты определит Geocoder API;
-   - **координаты** — найдите место на карте 2ГИС и введите широту и долготу.
-5. Разрешите доступ к геолокации.
-6. Нажмите **«Сохранить и обновить ETA»**.
+1. In Smartspacer, add one or more Complications of this plugin:
+   **Driving**, **Walking**, or **Transit**.
+2. Open **More settings** on the added Complication.
+3. Paste your 2GIS API key.
+4. Choose how to specify the destination:
+   - **by address** — coordinates will be resolved by the Geocoder API;
+   - **coordinates** — find the place in 2GIS and enter latitude and longitude.
+5. Grant location access.
+6. Tap **"Save and refresh ETA"**.
 
-Для обновления в фоне Android должен предоставить приложению доступ к геолокации
-**«Разрешить в любом режиме» / “Allow all the time”**.
+For background updates Android must grant the app location access set to
+**"Allow all the time"**.
 
-У плагина намеренно нет отдельной иконки в лаунчере: настройки открываются из
-Smartspacer через **More settings**.
+The plugin intentionally has no launcher icon: settings open from Smartspacer
+through **More settings**.
 
-## Как работает обновление
+## How refresh works
 
 ```text
 Smartspacer
-    │ периодический запрос
+    │ periodic request
     ▼
 EtaComplicationUpdateReceiver
-    │ последняя известная геопозиция
+    │ last known location
     ▼
 2GIS Routing API
-    │ ETA по запрошенным режимам
+    │ ETA for requested modes
     ▼
 SharedPreferences → Complication
 ```
 
-`getSmartspaceActions()` не выполняет сетевые запросы. Провайдеры Complication
-только читают уже сохранённый результат, поэтому Smartspacer получает ответ быстро.
-Сетевые запросы выполняются фоновым receiver и параллелятся для сокращения времени
-обновления.
+`getSmartspaceActions()` does not perform network calls. The Complication
+providers only read the latest cached result, so Smartspacer gets its response
+fast. Network calls happen in the background receiver and run in parallel to
+shorten update time.
 
-## Геолокация и приватность
+## Location and privacy
 
-- плагин не запускает постоянное отслеживание перемещений;
-- при сохранении запрашивается одна свежая точка с таймаутом;
-- фоновые обновления используют последнюю известную Android геопозицию;
-- API-ключ, адрес, координаты и кэш ETA хранятся локально в `SharedPreferences`;
-- геопозиция и пункт назначения отправляются только в API 2ГИС для построения маршрута.
+- the plugin does not start continuous location tracking;
+- saving requests a single fresh fix with a timeout;
+- background updates reuse the last known Android location;
+- the API key, address, coordinates, and ETA cache are stored locally in
+  `SharedPreferences`;
+- location and destination are sent only to the 2GIS API for route calculation.
 
-## Структура проекта
+## Project structure
 
 ```text
 app/src/main/java/com/rubcut/gis2smartspacer/
-├── SettingsActivity.kt                 # экран настроек
-├── SettingsRepository.kt               # локальные настройки и кэш
-├── LocationHelper.kt                   # получение геопозиции
-├── TwoGisClient.kt                     # Geocoder и Routing API
-├── EtaUpdater.kt                       # параллельное обновление ETA
-├── EtaComplicationUpdateReceiver.kt    # запросы обновления Smartspacer
+├── SettingsActivity.kt                 # settings screen
+├── SettingsRepository.kt               # local settings and cache
+├── LocationHelper.kt                   # location retrieval
+├── TwoGisClient.kt                     # Geocoder and Routing API
+├── EtaUpdater.kt                       # parallel ETA refresh
+├── EtaComplicationUpdateReceiver.kt    # Smartspacer update requests
 └── complications/
     ├── BaseEtaComplication.kt
     ├── CarEtaComplication.kt
@@ -147,18 +151,18 @@ app/src/main/java/com/rubcut/gis2smartspacer/
     └── TransitEtaComplication.kt
 ```
 
-## Ограничения
+## Limitations
 
-- точность ETA зависит от актуальности геопозиции и данных 2ГИС;
-- до настройки Complication показывает `Настроить`, а при недоступном маршруте —
-  `Нет ETA`; нажатие открывает экран настроек;
-- текст Basic Complication ограничен 12 символами, поэтому используется короткий
-  формат: `23 мин`, `1 ч 5 м`, `23 min`, `1 h 5 m`;
-- три установленные Complication могут выполнять до трёх API-запросов каждые
-  15 минут — учитывайте это при выборе тарифа.
+- ETA accuracy depends on how fresh your location is and on 2GIS data;
+- before configuration the Complication shows `Set up`, and when no route is
+  available — `No ETA`; tapping opens the settings screen;
+- the Basic Complication text is limited to 12 characters, so a short format is
+  used: `23 min`, `1 h 5 m`;
+- three installed Complications may issue up to three API calls every 15 minutes
+  — keep that in mind when choosing a plan.
 
-## Отказ от ответственности
+## Disclaimer
 
-Проект не является официальным продуктом 2ГИС или Smartspacer. Названия и товарные
-знаки принадлежат их правообладателям. Используя API 2ГИС, соблюдайте действующие
-условия сервиса и ограничения вашего тарифа.
+This project is not an official product of 2GIS or Smartspacer. Names and
+trademarks belong to their respective owners. By using the 2GIS API you agree
+to the current terms of service and the limits of your plan.

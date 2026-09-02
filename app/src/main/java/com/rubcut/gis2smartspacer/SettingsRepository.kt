@@ -3,7 +3,6 @@ package com.rubcut.gis2smartspacer
 import android.content.Context
 import android.content.SharedPreferences
 
-/** Быстрое синхронное хранилище настроек и последнего результата ETA. */
 class SettingsRepository(context: Context) {
 
     private val prefs: SharedPreferences =
@@ -32,7 +31,6 @@ class SettingsRepository(context: Context) {
     val usesManualCoordinates: Boolean
         get() = prefs.getBoolean(Constants.KEY_MANUAL_COORDINATES, false)
 
-    /** Сохраняет согласованный набор адреса и координат и сбрасывает старые ETA. */
     fun saveDestination(
         apiKey: String,
         address: String,
@@ -52,7 +50,6 @@ class SettingsRepository(context: Context) {
             .apply()
     }
 
-    /** Атомарно обновляет все запрошенные режимы и время успешного обновления. */
     fun setEtaResults(results: Map<TravelMode, Int?>) {
         val editor = prefs.edit()
         var hasSuccess = false
@@ -83,7 +80,7 @@ class SettingsRepository(context: Context) {
         TravelMode.TRANSIT -> Constants.KEY_TRANSIT_MINUTES
     }
 
-    /** Читает новый lossless Double и сохраняет совместимость с версией 1 (Float). */
+    // Preserve coordinates stored as Float by version 1.
     private fun readCoordinate(key: String): Double {
         if (!prefs.contains(key)) return 0.0
         return try {

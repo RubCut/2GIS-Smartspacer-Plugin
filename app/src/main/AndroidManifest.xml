@@ -14,18 +14,11 @@
         android:label="@string/app_name"
         android:theme="@style/Theme.Gis2Smartspacer">
 
-        <!--
-            Никакого LAUNCHER-интента: у плагина нет своей иконки в лаунчере.
-            Экран настроек открывается только через шестерёнку "Settings"
-            на экране "Edit Complication" внутри самого Smartspacer
-            (Smartspacer запускает эту Activity явным Intent-ом по имени класса).
-        -->
         <activity
             android:name=".SettingsActivity"
             android:exported="true"
             android:label="@string/settings_activity_label" />
 
-        <!-- Complication: время на машине -->
         <provider
             android:name=".complications.CarEtaComplication"
             android:authorities="${applicationId}.complication.car"
@@ -36,7 +29,6 @@
             </intent-filter>
         </provider>
 
-        <!-- Complication: время пешком -->
         <provider
             android:name=".complications.WalkEtaComplication"
             android:authorities="${applicationId}.complication.walk"
@@ -47,7 +39,6 @@
             </intent-filter>
         </provider>
 
-        <!-- Complication: время на общественном транспорте -->
         <provider
             android:name=".complications.TransitEtaComplication"
             android:authorities="${applicationId}.complication.transit"
@@ -58,7 +49,6 @@
             </intent-filter>
         </provider>
 
-        <!-- Приём периодических запросов на обновление от Smartspacer -->
         <receiver
             android:name=".EtaComplicationUpdateReceiver"
             android:exported="true"
