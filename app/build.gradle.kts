@@ -11,8 +11,8 @@ android {
         applicationId = "com.rubcut.gis2smartspacer"
         minSdk = 29
         targetSdk = 35
-        versionCode = 5
-        versionName = "2.3"
+        versionCode = 6
+        versionName = "2.4"
     }
 
     buildTypes {
@@ -32,8 +32,6 @@ android {
 }
 
 dependencies {
-    // Smartspacer Plugin SDK — проверь актуальную версию:
-    // https://central.sonatype.com/artifact/com.kieronquinn.smartspacer/sdk-plugin
     implementation("com.kieronquinn.smartspacer:sdk-plugin:1.1")
 
     implementation("androidx.core:core-ktx:1.13.1")

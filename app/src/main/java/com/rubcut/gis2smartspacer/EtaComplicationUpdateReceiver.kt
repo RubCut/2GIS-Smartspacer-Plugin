@@ -10,7 +10,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-/** Обрабатывает пакетные периодические обновления от Smartspacer. */
 class EtaComplicationUpdateReceiver : SmartspacerComplicationUpdateReceiver() {
 
     override fun onRequestSmartspaceComplicationUpdate(

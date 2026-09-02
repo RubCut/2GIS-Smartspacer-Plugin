@@ -13,11 +13,6 @@ import com.rubcut.gis2smartspacer.SettingsActivity
 import com.rubcut.gis2smartspacer.SettingsRepository
 import com.rubcut.gis2smartspacer.TravelMode
 
-/**
- * Общая логика для трёх Complication-провайдеров (авто/пешком/транспорт).
- * getSmartspaceActions() тут ничего не качает из сети — только читает
- * последнее закэшированное значение, обновляемое в EtaComplicationUpdateReceiver.
- */
 abstract class BaseEtaComplication(
     private val mode: TravelMode,
     private val iconRes: Int
@@ -37,8 +32,6 @@ abstract class BaseEtaComplication(
             else -> formatMinutes(minutes)
         }
 
-        // Complication никогда не исчезает: до настройки она сама сообщает,
-        // что нужно открыть More settings, а при временной ошибке показывает No ETA.
         return listOf(
             ComplicationTemplate.Basic(
                 id = "eta_${mode.name.lowercase()}_$smartspacerId",
@@ -51,7 +44,6 @@ abstract class BaseEtaComplication(
         )
     }
 
-    // Basic-шаблон ограничивает текст 12 символами, поэтому держим формат коротким
     private fun formatMinutes(minutes: Int): String {
         val context = provideContext()
         if (minutes < 60) {
@@ -87,14 +79,12 @@ abstract class BaseEtaComplication(
             ),
             icon = AndroidIcon.createWithResource(context, iconRes),
             refreshPeriodMinutes = com.rubcut.gis2smartspacer.Constants.REFRESH_PERIOD_MINUTES,
-            // До первого успешного запроса список пуст — обновления всё равно должны приходить.
             refreshIfNotVisible = true,
-            // Настройки доступны только через More settings, без показа при добавлении.
             configActivity = Intent(context, SettingsActivity::class.java)
         )
     }
 
     override fun onProviderRemoved(smartspacerId: String) {
-        // Настройки общие для всех трёх Complication, поэтому здесь ничего не чистим
+        // Settings are shared across all three Complications, so nothing to clean up here.
     }
 }
