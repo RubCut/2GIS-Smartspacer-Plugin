@@ -9,6 +9,7 @@ object Constants {
     const val KEY_DEST_ADDRESS = "dest_address"
     const val KEY_DEST_LAT = "dest_lat"
     const val KEY_DEST_LON = "dest_lon"
+    const val KEY_MANUAL_COORDINATES = "manual_coordinates"
 
     // Кэш последних результатов (читается синхронно в getSmartspaceActions)
     const val KEY_CAR_MINUTES = "car_minutes"
@@ -25,8 +26,8 @@ object Constants {
     const val REFRESH_PERIOD_MINUTES = 15
 }
 
-enum class TravelMode(val label: String) {
-    DRIVING("Авто"),
-    WALKING("Пешком"),
-    TRANSIT("Транспорт")
+enum class TravelMode {
+    DRIVING,
+    WALKING,
+    TRANSIT
 }

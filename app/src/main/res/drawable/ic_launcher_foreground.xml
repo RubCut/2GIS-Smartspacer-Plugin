@@ -1,0 +1,28 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- A map pin: the destination. -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,16C37.43,16 24,29.43 24,46c0,22.5 30,48 30,48s30,-25.5 30,-48c0,-16.57 -13.43,-30 -30,-30z" />
+
+    <!-- A route running through the pin. -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:pathData="M40,42C40,34.82 45.82,29 53,29s13,5.82 13,13c0,10 -15,11 -15,21c0,4.14 3.36,7.5 7.5,7.5S66,67.14 66,63"
+        android:strokeColor="#006C4C"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="6" />
+
+    <path
+        android:fillColor="#006C4C"
+        android:pathData="M40,35a7,7 0,1 0,0 14a7,7 0,1 0,0 -14" />
+
+    <path
+        android:fillColor="#006C4C"
+        android:pathData="M66,56a7,7 0,1 0,0 14a7,7 0,1 0,0 -14" />
+</vector>

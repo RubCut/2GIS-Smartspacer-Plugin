@@ -11,8 +11,8 @@ android {
         applicationId = "com.rubcut.gis2smartspacer"
         minSdk = 29
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 4
+        versionName = "2.2"
     }
 
     buildTypes {
