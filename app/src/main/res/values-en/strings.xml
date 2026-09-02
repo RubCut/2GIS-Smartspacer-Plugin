@@ -50,4 +50,8 @@
     <string name="eta_minutes">%1$d min</string>
     <string name="eta_hours">%1$d h</string>
     <string name="eta_hours_minutes">%1$d h %2$d m</string>
+    <string name="complication_needs_setup">Set up</string>
+    <string name="complication_no_eta">No ETA</string>
+    <string name="status_route_error_title">Route unavailable</string>
+    <string name="status_route_error">Check the API key and destination coordinates. The complication will remain visible and update automatically.</string>
 </resources>

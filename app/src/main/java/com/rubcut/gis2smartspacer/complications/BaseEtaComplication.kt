@@ -24,19 +24,28 @@ abstract class BaseEtaComplication(
 ) : SmartspacerComplicationProvider() {
 
     override fun getSmartspaceActions(smartspacerId: String): List<SmartspaceAction> {
-        val settings = SettingsRepository(provideContext())
-        if (!settings.isConfigured) return emptyList()
+        val context = provideContext()
+        val settings = SettingsRepository(context)
+        val minutes = settings.getEtaMinutes(mode)
+        val content = when {
+            !settings.isConfigured -> context.getString(
+                com.rubcut.gis2smartspacer.R.string.complication_needs_setup
+            )
+            minutes == null -> context.getString(
+                com.rubcut.gis2smartspacer.R.string.complication_no_eta
+            )
+            else -> formatMinutes(minutes)
+        }
 
-        val minutes = settings.getEtaMinutes(mode) ?: return emptyList()
-        val content = formatMinutes(minutes)
-
+        // Complication никогда не исчезает: до настройки она сама сообщает,
+        // что нужно открыть More settings, а при временной ошибке показывает No ETA.
         return listOf(
             ComplicationTemplate.Basic(
                 id = "eta_${mode.name.lowercase()}_$smartspacerId",
-                icon = Icon(AndroidIcon.createWithResource(provideContext(), iconRes), shouldTint = true),
+                icon = Icon(AndroidIcon.createWithResource(context, iconRes), shouldTint = true),
                 content = Text(content),
                 onClick = TapAction(
-                    intent = Intent(provideContext(), SettingsActivity::class.java)
+                    intent = Intent(context, SettingsActivity::class.java)
                 )
             ).create()
         )

@@ -50,4 +50,8 @@
     <string name="eta_minutes">%1$d мин</string>
     <string name="eta_hours">%1$d ч</string>
     <string name="eta_hours_minutes">%1$d ч %2$d м</string>
+    <string name="complication_needs_setup">Настроить</string>
+    <string name="complication_no_eta">Нет ETA</string>
+    <string name="status_route_error_title">Маршрут не построен</string>
+    <string name="status_route_error">Проверьте API-ключ и координаты назначения. Complication останется видимой и обновится автоматически.</string>
 </resources>

@@ -203,7 +203,15 @@ class SettingsActivity : AppCompatActivity() {
             val origin = LocationHelper.getCurrentLocation(this@SettingsActivity)
             val updated = origin != null && EtaUpdater.refreshFrom(origin, settingsRepository)
             setBusy(false)
-            showStoredStatus(updated)
+            if (origin != null && !updated) {
+                showStatus(
+                    R.string.status_route_error_title,
+                    R.string.status_route_error,
+                    isError = true
+                )
+            } else {
+                showStoredStatus(updated)
+            }
             notifyAllComplications()
             Toast.makeText(this@SettingsActivity, R.string.saved_message, Toast.LENGTH_SHORT).show()
         }
