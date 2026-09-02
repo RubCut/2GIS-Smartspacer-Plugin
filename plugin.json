@@ -3,7 +3,7 @@
 	"download_url": "https://github.com/RubCut/2GIS-Smartspacer-Plugin/releases/download/Realese/2GIS-Smartspacer-plugin-V1.apk",
 	"version_code": 1,
 	"changelog": "Read all information on github.",
-	"required_package": "",
+	"required_package": "com.kieronquinn.app.smartspacer",
 	"minimum_smartspacer_version": 0,
 	"screenshots": ["https://www.dropbox.com/scl/fi/djv5dz5gusbq1zsegr2pq/photo_2026-09-02_21-37-10.jpg?rlkey=st8i20njrvy9l2v3abv7eo59e&st=a7rzk3u8&dl=1", "https://www.dropbox.com/scl/fi/g59p3i5ejj3twgk6nr6i1/photo_2026-09-02_21-37-18.jpg?rlkey=35n9fd98jis0jtdgec7x529lg&st=jzo4a5fm&dl=1"]
 }
