@@ -154,6 +154,39 @@ class ComplicationSettings internal constructor(
     val lastUpdateTimestamp: Long
         get() = prefs.getLong(field(FIELD_LAST_UPDATE_TS), 0L)
 
+    /**
+     * How often Smartspacer is asked to refresh this instance, minutes.
+     * Kept inside [Constants.MIN_UPDATE_INTERVAL_MINUTES]..
+     * [Constants.MAX_UPDATE_INTERVAL_MINUTES].
+     */
+    var updateIntervalMinutes: Int
+        get() = Constants.clampUpdateInterval(
+            prefs.getInt(field(FIELD_UPDATE_INTERVAL), Constants.DEFAULT_REFRESH_PERIOD_MINUTES)
+        )
+        set(value) {
+            prefs.edit()
+                .putInt(field(FIELD_UPDATE_INTERVAL), Constants.clampUpdateInterval(value))
+                .apply()
+        }
+
+    /** What the Complication does when tapped. */
+    var tapAction: TapActionMode
+        get() = prefs.getString(field(FIELD_TAP_ACTION), null)
+            ?.let { stored -> TapActionMode.entries.firstOrNull { it.name == stored } }
+            ?: TapActionMode.SETTINGS
+        set(value) {
+            prefs.edit().putString(field(FIELD_TAP_ACTION), value.name).apply()
+        }
+
+    /**
+     * Persists the behavior block (interval + tap action) of this instance.
+     * Unlike the destination, it is saved immediately, without geocoding.
+     */
+    fun saveBehavior(updateIntervalMinutes: Int, tapAction: TapActionMode) {
+        this.updateIntervalMinutes = updateIntervalMinutes
+        this.tapAction = tapAction
+    }
+
     private fun field(name: String): String =
         Constants.INSTANCE_PREFIX + smartspacerId + "_" + name
 
@@ -242,6 +275,8 @@ class ComplicationSettings internal constructor(
         const val FIELD_WALK_MINUTES = "walk_minutes"
         const val FIELD_TRANSIT_MINUTES = "transit_minutes"
         const val FIELD_LAST_UPDATE_TS = "last_update_ts"
+        const val FIELD_UPDATE_INTERVAL = "update_interval_minutes"
+        const val FIELD_TAP_ACTION = "tap_action"
         const val FIELD_INITIALIZED = "initialized"
     }
 }

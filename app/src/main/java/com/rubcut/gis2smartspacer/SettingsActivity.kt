@@ -10,29 +10,32 @@ import android.provider.Settings
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.appbar.CollapsingToolbarLayout
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.MaterialColors
+import com.google.android.material.progressindicator.CircularProgressIndicator
+import com.google.android.material.slider.LabelFormatter
+import com.google.android.material.slider.Slider
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.kieronquinn.app.smartspacer.sdk.SmartspacerConstants
-import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerComplicationProvider
-import com.rubcut.gis2smartspacer.complications.CarEtaComplication
-import com.rubcut.gis2smartspacer.complications.TransitEtaComplication
-import com.rubcut.gis2smartspacer.complications.WalkEtaComplication
 import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Date
+import kotlin.math.roundToInt
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -50,13 +53,26 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var longitudeField: TextInputEditText
     private lateinit var coordinatesContainer: LinearLayout
     private lateinit var destinationModeGroup: MaterialButtonToggleGroup
+    private lateinit var tapActionGroup: MaterialButtonToggleGroup
+    private lateinit var intervalSlider: Slider
+    private lateinit var intervalValue: TextView
+    private lateinit var collapsingToolbar: CollapsingToolbarLayout
+    private lateinit var toolbar: MaterialToolbar
+    private lateinit var appBar: AppBarLayout
+    private lateinit var contentScroll: NestedScrollView
     private lateinit var statusCard: MaterialCardView
     private lateinit var statusTitle: TextView
     private lateinit var statusText: TextView
     private lateinit var statusIcon: ImageView
-    private lateinit var progress: ProgressBar
+    private lateinit var progress: CircularProgressIndicator
     private lateinit var saveButton: MaterialButton
     private lateinit var locationButton: MaterialButton
+    private var toolbarTitleShown = false
+
+    private companion object {
+        /** ~18% alpha for the progress indicator track. */
+        const val SCRIM_ALPHA = 0x30000000
+    }
 
     private val foregroundPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -90,6 +106,7 @@ class SettingsActivity : AppCompatActivity() {
         if (complicationSettings.isConfigured) setResult(Activity.RESULT_OK)
         bindViews()
         applySystemBarInsets()
+        setupCollapsingTitle()
         // A Complication without its own key starts from the synced default.
         apiKeyField.setText(complicationSettings.apiKey.ifBlank { settingsRepository.defaultApiKey })
         addressField.setText(complicationSettings.destAddress)
@@ -104,6 +121,7 @@ class SettingsActivity : AppCompatActivity() {
         }
         destinationModeGroup.check(initialMode)
         showDestinationMode(initialMode)
+        setupBehaviorControls()
         showStoredStatus()
         updateLocationButton()
 
@@ -143,6 +161,13 @@ class SettingsActivity : AppCompatActivity() {
         longitudeField = findViewById(R.id.longitudeField)
         coordinatesContainer = findViewById(R.id.coordinatesContainer)
         destinationModeGroup = findViewById(R.id.destinationModeGroup)
+        tapActionGroup = findViewById(R.id.tapActionGroup)
+        intervalSlider = findViewById(R.id.intervalSlider)
+        intervalValue = findViewById(R.id.intervalValue)
+        collapsingToolbar = findViewById(R.id.collapsingToolbar)
+        toolbar = findViewById(R.id.toolbar)
+        appBar = findViewById(R.id.appBar)
+        contentScroll = findViewById(R.id.contentScroll)
         statusCard = findViewById(R.id.statusCard)
         statusTitle = findViewById(R.id.statusTitle)
         statusText = findViewById(R.id.statusText)
@@ -150,6 +175,89 @@ class SettingsActivity : AppCompatActivity() {
         progress = findViewById(R.id.progressIndicator)
         saveButton = findViewById(R.id.saveButton)
         locationButton = findViewById(R.id.requestLocationButton)
+    }
+
+    /**
+     * The large flexible app bar shows the big headline while expanded and the
+     * window name ("2GIS ETA") once collapsed into the pinned toolbar.
+     */
+    private fun setupCollapsingTitle() {
+        toolbar.setNavigationOnClickListener { finish() }
+        appBar.addOnOffsetChangedListener { bar, verticalOffset ->
+            val collapsed = bar.totalScrollRange + verticalOffset == 0
+            if (collapsed == toolbarTitleShown) return@addOnOffsetChangedListener
+            toolbarTitleShown = collapsed
+            if (collapsed) {
+                // Fully collapsed: the toolbar carries the window name.
+                collapsingToolbar.isTitleEnabled = false
+                toolbar.title = getString(R.string.settings_activity_label)
+            } else {
+                // Expanded (or expanding): the collapsing layout draws the
+                // large headline again.
+                toolbar.title = null
+                collapsingToolbar.isTitleEnabled = true
+            }
+        }
+    }
+
+    /** Interval and tap action belong to this instance and save immediately. */
+    private fun setupBehaviorControls() {
+        val storedInterval = complicationSettings.updateIntervalMinutes
+        intervalSlider.value = storedInterval.toFloat()
+        updateIntervalSummary(storedInterval)
+        intervalSlider.setLabelFormatter(LabelFormatter { value ->
+            EtaFormatter.formatInterval(this, snapInterval(value))
+        })
+        intervalSlider.addOnChangeListener { _, value, _ ->
+            updateIntervalSummary(snapInterval(value))
+        }
+        intervalSlider.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
+            override fun onStartTrackingTouch(slider: Slider) = Unit
+
+            override fun onStopTrackingTouch(slider: Slider) {
+                val snapped = snapInterval(slider.value)
+                slider.value = snapped.toFloat()
+                saveBehavior(snapped, complicationSettings.tapAction)
+            }
+        })
+
+        tapActionGroup.check(
+            if (complicationSettings.tapAction == TapActionMode.UPDATE_ETA) {
+                R.id.tapActionUpdateButton
+            } else {
+                R.id.tapActionSettingsButton
+            }
+        )
+        tapActionGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (!isChecked) return@addOnButtonCheckedListener
+            val action = if (checkedId == R.id.tapActionUpdateButton) {
+                TapActionMode.UPDATE_ETA
+            } else {
+                TapActionMode.SETTINGS
+            }
+            if (action != complicationSettings.tapAction) {
+                saveBehavior(complicationSettings.updateIntervalMinutes, action)
+            }
+        }
+    }
+
+    private fun snapInterval(value: Float): Int =
+        (value / 5f).roundToInt() * 5
+
+    private fun updateIntervalSummary(minutes: Int) {
+        intervalValue.text = getString(
+            R.string.update_interval_summary,
+            EtaFormatter.formatInterval(this, minutes)
+        )
+    }
+
+    private fun saveBehavior(updateIntervalMinutes: Int, tapAction: TapActionMode) {
+        complicationSettings.saveBehavior(updateIntervalMinutes, tapAction)
+        // The interval changes Smartspacer's refresh plan and the tap action
+        // changes the stored click intent — ask for a re-read.
+        notifyComplication()
+        // Do not interrupt a save-in-progress status message.
+        if (saveButton.isEnabled) showStoredStatus()
     }
 
     private fun saveAndGeocode() {
@@ -257,7 +365,7 @@ class SettingsActivity : AppCompatActivity() {
                 getString(
                     R.string.status_ready,
                     "$address · $time",
-                    Constants.REFRESH_PERIOD_MINUTES
+                    complicationSettings.updateIntervalMinutes
                 )
             )
         } else {
@@ -297,7 +405,10 @@ class SettingsActivity : AppCompatActivity() {
         statusTitle.setTextColor(foreground)
         statusText.setTextColor(foreground)
         statusIcon.setColorFilter(foreground)
-        progress.indeterminateTintList = android.content.res.ColorStateList.valueOf(foreground)
+        progress.setIndicatorColor(foreground)
+        // Translucent track of the same tone keeps the wavy indicator readable
+        // on both container colors.
+        progress.setTrackColor((foreground and 0x00FFFFFF) or SCRIM_ALPHA)
     }
 
     private fun setBusy(busy: Boolean) {
@@ -320,10 +431,14 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun applySystemBarInsets() {
-        val root = findViewById<View>(R.id.rootScroll)
-        ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
+        // Transparent system bars: pad the app bar with the top inset and the
+        // scroll content with the bottom/side insets, like the pre-scroll
+        // version of this screen did.
+        val root = findViewById<View>(R.id.root)
+        ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+            appBar.setPadding(bars.left, bars.top, bars.right, 0)
+            contentScroll.setPadding(bars.left, contentScroll.paddingTop, bars.right, bars.bottom)
             insets
         }
         ViewCompat.requestApplyInsets(root)
@@ -376,27 +491,6 @@ class SettingsActivity : AppCompatActivity() {
     private fun notifyComplication() {
         // Refresh only the instance that was edited; the authority extra tells
         // which provider owns it.
-        when (complicationAuthority) {
-            Constants.AUTHORITY_CAR -> SmartspacerComplicationProvider.notifyChange(
-                this, CarEtaComplication::class.java, smartspacerId
-            )
-            Constants.AUTHORITY_WALK -> SmartspacerComplicationProvider.notifyChange(
-                this, WalkEtaComplication::class.java, smartspacerId
-            )
-            Constants.AUTHORITY_TRANSIT -> SmartspacerComplicationProvider.notifyChange(
-                this, TransitEtaComplication::class.java, smartspacerId
-            )
-            else -> {
-                SmartspacerComplicationProvider.notifyChange(
-                    this, CarEtaComplication::class.java, smartspacerId
-                )
-                SmartspacerComplicationProvider.notifyChange(
-                    this, WalkEtaComplication::class.java, smartspacerId
-                )
-                SmartspacerComplicationProvider.notifyChange(
-                    this, TransitEtaComplication::class.java, smartspacerId
-                )
-            }
-        }
+        ComplicationNotifier.notifyChange(this, complicationAuthority, smartspacerId)
     }
 }

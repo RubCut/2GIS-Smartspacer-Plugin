@@ -10,8 +10,8 @@
 
 [![Build APK](https://github.com/RubCut/2GIS-Smartspacer-Plugin/actions/workflows/build.yml/badge.svg)](https://github.com/RubCut/2GIS-Smartspacer-Plugin/actions/workflows/build.yml)
 ![Android 10+](https://img.shields.io/badge/Android-10%2B-3DDC84?logo=android&logoColor=white)
-![Kotlin](https://img.shields.io/badge/Kotlin-1.9.24-7F52FF?logo=kotlin&logoColor=white)
-![Material 3](https://img.shields.io/badge/Material-3-6750A4)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.2.20-7F52FF?logo=kotlin&logoColor=white)
+![Material 3 Expressive](https://img.shields.io/badge/Material-3_Expressive-6750A4)
 
 </div>
 
@@ -27,7 +27,8 @@ Geocoder API или задать вручную широтой и долгото
 
 ## Возможности
 
-- современный экран настроек в стиле Material 3;
+- экран настроек в стиле Material 3 Expressive с большим сворачивающимся
+  заголовком;
 - динамические цвета на Android 12+;
 - светлая и тёмная темы;
 - интерфейс на русском и английском языках;
@@ -41,7 +42,10 @@ Geocoder API или задать вручную широтой и долгото
 - Complication остаётся видимой при временной ошибке и показывает `Нет ETA`;
 - быстрый переход к карте и Platform Manager 2ГИС;
 - немедленный расчёт ETA после сохранения;
-- автоматическое обновление каждые 15 минут;
+- автоматическое обновление с индивидуальным интервалом для каждой
+  Complication — от 5 до 480 минут;
+- выбор действия по тапу для каждой Complication: открыть настройки или
+  мгновенно обновить ETA прямо из Smartspace;
 - параллельный расчёт автомобильного, пешего и транспортного маршрутов;
 - отсутствие постоянного отслеживания геолокации.
 
@@ -77,7 +81,7 @@ Geocoder API или задать вручную широтой и долгото
 
 ### Сборка из исходников
 
-Требуются JDK 17, Android SDK 35 и Gradle 8.9.
+Требуются JDK 17, Android SDK 36 и Gradle 8.13.
 
 ```bash
 git clone https://github.com/RubCut/2GIS-Smartspacer-Plugin.git
@@ -103,8 +107,11 @@ app/build/outputs/apk/debug/app-debug.apk
 4. Выберите способ задания назначения:
    - **по адресу** — координаты определит Geocoder API;
    - **координаты** — найдите место на карте 2ГИС и введите широту и долготу.
-5. Разрешите доступ к геолокации.
-6. Нажмите **«Сохранить и обновить ETA»**.
+5. Задайте поведение этой Complication:
+   - **Интервал обновления** — от 5 до 480 минут;
+   - **Действие по тапу** — открыть настройки или обновить ETA нажатием.
+6. Разрешите доступ к геолокации.
+7. Нажмите **«Сохранить и обновить ETA»**.
 
 Для обновления в фоне Android должен предоставить приложению доступ к геолокации
 **«Разрешить в любом режиме» / “Allow all the time”**.
@@ -116,7 +123,7 @@ Smartspacer через **More settings**.
 
 ```text
 Smartspacer
-    │ периодический запрос
+    │ периодический запрос (интервал каждой Complication, 5–480 мин)
     ▼
 EtaComplicationUpdateReceiver
     │ последняя известная геопозиция
@@ -147,6 +154,7 @@ SharedPreferences → Complication
 ```text
 app/src/main/java/com/rubcut/gis2smartspacer/
 ├── SettingsActivity.kt                 # экран настроек
+├── UpdateEtaActivity.kt                # trampoline для действия по тапу «Обновить ETA»
 ├── SettingsRepository.kt               # локальные настройки и кэш
 ├── LocationHelper.kt                   # получение геопозиции
 ├── TwoGisClient.kt                     # Geocoder и Routing API
@@ -163,11 +171,11 @@ app/src/main/java/com/rubcut/gis2smartspacer/
 
 - точность ETA зависит от актуальности геопозиции и данных 2ГИС;
 - до настройки Complication показывает `Настроить`, а при недоступном маршруте —
-  `Нет ETA`; нажатие открывает экран настроек;
+  `Нет ETA`; нажатие выполняет выбранное действие (настройки или обновление ETA);
 - текст Basic Complication ограничен 12 символами, поэтому используется короткий
   формат: `23 мин`, `1 ч 5 м`, `23 min`, `1 h 5 m`;
-- три установленные Complication могут выполнять до трёх API-запросов каждые
-  15 минут — учитывайте это при выборе тарифа.
+- три установленные Complication могут выполнять до трёх API-запросов за
+  обновление — каждая со своим интервалом; учитывайте это при выборе тарифа.
 
 ## Отказ от ответственности
 

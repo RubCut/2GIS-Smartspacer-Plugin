@@ -19,6 +19,15 @@
             android:exported="true"
             android:label="@string/settings_activity_label" />
 
+        <!-- Trampoline behind the "Update ETA" tap action: launched by
+             Smartspacer from another app, so it must be exported. -->
+        <activity
+            android:name=".UpdateEtaActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:noHistory="true"
+            android:theme="@style/Theme.Gis2Smartspacer.Translucent" />
+
         <provider
             android:name=".complications.CarEtaComplication"
             android:authorities="${applicationId}.complication.car"

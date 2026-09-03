@@ -54,4 +54,20 @@
     <string name="complication_no_eta">Нет ETA</string>
     <string name="status_route_error_title">Маршрут не построен</string>
     <string name="status_route_error">Проверьте API-ключ и координаты назначения. Complication останется видимой и обновится автоматически.</string>
+    <string name="behavior_section_title">Поведение</string>
+    <string name="update_interval_label">Интервал обновления</string>
+    <string name="update_interval_summary">Обновление каждые %1$s</string>
+    <string name="update_interval_helper">Персональный интервал для этой Complication — от 5 до 480 минут. Частые обновления точнее, но расходуют больше батареи и запросов к API.</string>
+    <string name="tap_action_label">Действие по тапу</string>
+    <string name="tap_action_settings">Настройки</string>
+    <string name="tap_action_update">Обновить ETA</string>
+    <string name="tap_action_helper">Что произойдёт при нажатии на Complication в Smartspace.</string>
+    <string name="close_action">Закрыть</string>
+    <string name="eta_hours_full">%1$d ч</string>
+    <string name="eta_hours_minutes_full">%1$d ч %2$d мин</string>
+    <string name="toast_updating">Обновляем ETA…</string>
+    <string name="toast_updated">ETA обновлён: %1$s</string>
+    <string name="toast_update_failed">Не удалось обновить ETA</string>
+    <string name="toast_update_needs_setup">Сначала настройте Complication</string>
+    <string name="toast_no_location">Геолокация недоступна</string>
 </resources>
