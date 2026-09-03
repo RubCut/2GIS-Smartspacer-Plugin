@@ -22,7 +22,7 @@ class UpdateEtaActivity : AppCompatActivity() {
         val authority = intent.getStringExtra(SmartspacerConstants.EXTRA_AUTHORITY)
         // The authority tells which provider was tapped; without it (a stale
         // tap action from an older plugin version) refresh all three modes.
-        val modes = Constants.modeForAuthority(authority)?.let { setOf(it) }
+        val modes = Constants.modeForAuthority(authority.orEmpty())?.let { setOf(it) }
             ?: TravelMode.entries.toSet()
 
         // The activity stays translucent-and-empty while the coroutine runs;
