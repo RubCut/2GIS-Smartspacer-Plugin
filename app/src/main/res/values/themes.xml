@@ -30,9 +30,11 @@
         <item name="colorSurfaceContainerHighest">@color/surface_container_highest</item>
         <item name="colorOutline">@color/outline</item>
         <item name="colorOutlineVariant">@color/outline_variant</item>
-        <item name="colorInverseSurface">@color/inverse_surface</item>
-        <item name="colorInverseOnSurface">@color/inverse_on_surface</item>
-        <item name="colorInversePrimary">@color/inverse_primary</item>
+        <!-- Inverse roles are named colorSurfaceInverse/colorOnSurfaceInverse/
+             colorPrimaryInverse in the views-based Material Components. -->
+        <item name="colorSurfaceInverse">@color/inverse_surface</item>
+        <item name="colorOnSurfaceInverse">@color/inverse_on_surface</item>
+        <item name="colorPrimaryInverse">@color/inverse_primary</item>
         <item name="colorError">@color/error</item>
         <item name="colorOnError">@color/on_error</item>
         <item name="colorErrorContainer">@color/error_container</item>
