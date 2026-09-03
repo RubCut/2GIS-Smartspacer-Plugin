@@ -11,9 +11,12 @@ import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerComplicationProvi
 import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerComplicationProvider.Config
 import com.kieronquinn.app.smartspacer.sdk.utils.ComplicationTemplate
 import com.rubcut.gis2smartspacer.Constants
+import com.rubcut.gis2smartspacer.EtaFormatter
 import com.rubcut.gis2smartspacer.SettingsActivity
 import com.rubcut.gis2smartspacer.SettingsRepository
+import com.rubcut.gis2smartspacer.TapActionMode
 import com.rubcut.gis2smartspacer.TravelMode
+import com.rubcut.gis2smartspacer.UpdateEtaActivity
 
 abstract class BaseEtaComplication(
     private val mode: TravelMode,
@@ -32,7 +35,7 @@ abstract class BaseEtaComplication(
             minutes == null -> context.getString(
                 com.rubcut.gis2smartspacer.R.string.complication_no_eta
             )
-            else -> formatMinutes(minutes)
+            else -> EtaFormatter.formatMinutes(context, minutes)
         }
 
         return listOf(
@@ -41,7 +44,7 @@ abstract class BaseEtaComplication(
                 icon = Icon(AndroidIcon.createWithResource(context, iconRes), shouldTint = true),
                 content = Text(content),
                 onClick = TapAction(
-                    intent = Intent(context, SettingsActivity::class.java).apply {
+                    intent = Intent(context, tapTarget(settings.tapAction)).apply {
                         putExtra(SmartspacerConstants.EXTRA_SMARTSPACER_ID, smartspacerId)
                         putExtra(
                             SmartspacerConstants.EXTRA_AUTHORITY,
@@ -53,22 +56,11 @@ abstract class BaseEtaComplication(
         )
     }
 
-    private fun formatMinutes(minutes: Int): String {
-        val context = provideContext()
-        if (minutes < 60) {
-            return context.getString(com.rubcut.gis2smartspacer.R.string.eta_minutes, minutes)
-        }
-        val hours = minutes / 60
-        val remainingMinutes = minutes % 60
-        return if (remainingMinutes == 0) {
-            context.getString(com.rubcut.gis2smartspacer.R.string.eta_hours, hours)
-        } else {
-            context.getString(
-                com.rubcut.gis2smartspacer.R.string.eta_hours_minutes,
-                hours,
-                remainingMinutes
-            )
-        }
+    // The tap action is chosen per instance in the settings screen: open the
+    // settings, or refresh the ETA right from the Smartspace.
+    private fun tapTarget(tapAction: TapActionMode): Class<*> = when (tapAction) {
+        TapActionMode.SETTINGS -> SettingsActivity::class.java
+        TapActionMode.UPDATE_ETA -> UpdateEtaActivity::class.java
     }
 
     override fun getConfig(smartspacerId: String?): Config {
@@ -80,6 +72,11 @@ abstract class BaseEtaComplication(
                 TravelMode.TRANSIT -> com.rubcut.gis2smartspacer.R.string.mode_transit
             }
         )
+        // Each instance sets its own refresh interval (5–480 minutes); the
+        // generic config (unknown id) falls back to the default period.
+        val refreshPeriodMinutes = smartspacerId
+            ?.let { SettingsRepository(context).forComplication(it).updateIntervalMinutes }
+            ?: Constants.DEFAULT_REFRESH_PERIOD_MINUTES
         return Config(
             label = context.getString(com.rubcut.gis2smartspacer.R.string.complication_label, modeLabel),
             description = context.getString(
@@ -87,7 +84,7 @@ abstract class BaseEtaComplication(
                 modeLabel.lowercase()
             ),
             icon = AndroidIcon.createWithResource(context, iconRes),
-            refreshPeriodMinutes = com.rubcut.gis2smartspacer.Constants.REFRESH_PERIOD_MINUTES,
+            refreshPeriodMinutes = refreshPeriodMinutes,
             refreshIfNotVisible = true,
             configActivity = Intent(context, SettingsActivity::class.java)
         )

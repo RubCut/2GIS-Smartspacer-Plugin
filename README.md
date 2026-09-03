@@ -10,8 +10,8 @@
 
 [![Build APK](https://github.com/RubCut/2GIS-Smartspacer-Plugin/actions/workflows/build.yml/badge.svg)](https://github.com/RubCut/2GIS-Smartspacer-Plugin/actions/workflows/build.yml)
 ![Android 10+](https://img.shields.io/badge/Android-10%2B-3DDC84?logo=android&logoColor=white)
-![Kotlin](https://img.shields.io/badge/Kotlin-1.9.24-7F52FF?logo=kotlin&logoColor=white)
-![Material 3](https://img.shields.io/badge/Material-3-6750A4)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.2.20-7F52FF?logo=kotlin&logoColor=white)
+![Material 3 Expressive](https://img.shields.io/badge/Material-3_Expressive-6750A4)
 
 </div>
 
@@ -27,7 +27,7 @@ the Geocoder API, or set manually as latitude and longitude.
 
 ## Features
 
-- Modern Material 3 settings screen;
+- Settings screen in Material 3 Expressive, with a large collapsing title;
 - Dynamic colors on Android 12+;
 - Light and dark themes;
 - English and Russian UI;
@@ -41,7 +41,10 @@ the Geocoder API, or set manually as latitude and longitude.
 - Complication stays visible on a temporary error and shows `No ETA`;
 - Quick jump to the 2GIS map and Platform Manager;
 - Immediate ETA calculation after saving;
-- Automatic refresh every 15 minutes;
+- Automatic refresh with an individual interval per Complication — from 5
+  to 480 minutes;
+- Choice of tap action for each Complication: open its settings or update
+  the ETA instantly right from the Smartspace;
 - Parallel calculation of driving, walking, and transit routes;
 - No continuous location tracking.
 
@@ -78,7 +81,7 @@ settings screen.
 
 ### Building from sources
 
-Requires JDK 17, Android SDK 35, and Gradle 8.9.
+Requires JDK 17, Android SDK 36, and Gradle 8.13.
 
 ```bash
 git clone https://github.com/RubCut/2GIS-Smartspacer-Plugin.git
@@ -104,8 +107,11 @@ app/build/outputs/apk/debug/app-debug.apk
 4. Choose how to specify the destination:
    - **by address** — coordinates will be resolved by the Geocoder API;
    - **coordinates** — find the place in 2GIS and enter latitude and longitude.
-5. Grant location access.
-6. Tap **"Save and refresh ETA"**.
+5. Choose the behavior of this Complication:
+   - **Update interval** — from 5 to 480 minutes;
+   - **Tap action** — open the settings or refresh the ETA on tap.
+6. Grant location access.
+7. Tap **"Save and refresh ETA"**.
 
 For background updates Android must grant the app location access set to
 **"Allow all the time"**.
@@ -117,7 +123,7 @@ through **More settings**.
 
 ```text
 Smartspacer
-    │ periodic request
+    │ periodic request (individual interval, 5–480 min)
     ▼
 EtaComplicationUpdateReceiver
     │ last known location
@@ -147,6 +153,7 @@ shorten update time.
 ```text
 app/src/main/java/com/rubcut/gis2smartspacer/
 ├── SettingsActivity.kt                 # settings screen
+├── UpdateEtaActivity.kt                # "Update ETA" tap-action trampoline
 ├── SettingsRepository.kt               # local settings and cache
 ├── LocationHelper.kt                   # location retrieval
 ├── TwoGisClient.kt                     # Geocoder and Routing API
@@ -163,11 +170,11 @@ app/src/main/java/com/rubcut/gis2smartspacer/
 
 - ETA accuracy depends on how fresh your location is and on 2GIS data;
 - before configuration the Complication shows `Set up`, and when no route is
-  available — `No ETA`; tapping opens the settings screen;
+  available — `No ETA`; tapping runs the selected action (settings or ETA update);
 - the Basic Complication text is limited to 12 characters, so a short format is
   used: `23 min`, `1 h 5 m`;
-- three installed Complications may issue up to three API calls every 15 minutes
-  — keep that in mind when choosing a plan.
+- three installed Complications may issue up to three API calls per refresh
+  at the interval each of them picked — keep that in mind when choosing a plan.
 
 ## Disclaimer
 

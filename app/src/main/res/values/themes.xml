@@ -1,5 +1,8 @@
 <resources>
-    <style name="Theme.Gis2Smartspacer" parent="Theme.Material3.DayNight.NoActionBar">
+    <!-- Material 3 Expressive: expressive component styles (large flexible
+         app bar, expressive buttons, sliders, progress indicators) resolve
+         from this theme automatically. -->
+    <style name="Theme.Gis2Smartspacer" parent="Theme.Material3Expressive.DayNight.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorOnPrimary">@color/on_primary</item>
         <item name="colorPrimaryContainer">@color/primary_container</item>
@@ -8,11 +11,28 @@
         <item name="colorOnSecondary">@color/on_secondary</item>
         <item name="colorSecondaryContainer">@color/secondary_container</item>
         <item name="colorOnSecondaryContainer">@color/on_secondary_container</item>
+        <item name="colorTertiary">@color/tertiary</item>
+        <item name="colorOnTertiary">@color/on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/on_tertiary_container</item>
         <item name="android:colorBackground">@color/surface</item>
+        <item name="colorOnBackground">@color/on_surface</item>
         <item name="colorSurface">@color/surface</item>
-        <item name="colorSurfaceVariant">@color/surface_variant</item>
         <item name="colorOnSurface">@color/on_surface</item>
+        <item name="colorSurfaceVariant">@color/surface_variant</item>
         <item name="colorOnSurfaceVariant">@color/on_surface_variant</item>
+        <item name="colorSurfaceDim">@color/surface_dim</item>
+        <item name="colorSurfaceBright">@color/surface_bright</item>
+        <item name="colorSurfaceContainerLowest">@color/surface_container_lowest</item>
+        <item name="colorSurfaceContainerLow">@color/surface_container_low</item>
+        <item name="colorSurfaceContainer">@color/surface_container</item>
+        <item name="colorSurfaceContainerHigh">@color/surface_container_high</item>
+        <item name="colorSurfaceContainerHighest">@color/surface_container_highest</item>
+        <item name="colorOutline">@color/outline</item>
+        <item name="colorOutlineVariant">@color/outline_variant</item>
+        <item name="colorInverseSurface">@color/inverse_surface</item>
+        <item name="colorInverseOnSurface">@color/inverse_on_surface</item>
+        <item name="colorInversePrimary">@color/inverse_primary</item>
         <item name="colorError">@color/error</item>
         <item name="colorOnError">@color/on_error</item>
         <item name="colorErrorContainer">@color/error_container</item>
@@ -21,5 +41,13 @@
         <item name="android:windowLightStatusBar">?attr/isLightTheme</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+    <!-- Invisible trampoline behind the "Update ETA" tap action. -->
+    <style name="Theme.Gis2Smartspacer.Translucent" parent="Theme.Gis2Smartspacer">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
     </style>
 </resources>

@@ -34,7 +34,14 @@ object Constants {
     const val AUTHORITY_WALK = "com.rubcut.gis2smartspacer.complication.walk"
     const val AUTHORITY_TRANSIT = "com.rubcut.gis2smartspacer.complication.transit"
 
-    const val REFRESH_PERIOD_MINUTES = 15
+    // Every Complication instance picks its own update interval inside this
+    // range; it is passed to Smartspacer as the per-instance refresh period.
+    const val DEFAULT_REFRESH_PERIOD_MINUTES = 15
+    const val MIN_UPDATE_INTERVAL_MINUTES = 5
+    const val MAX_UPDATE_INTERVAL_MINUTES = 480
+
+    fun clampUpdateInterval(minutes: Int): Int =
+        minutes.coerceIn(MIN_UPDATE_INTERVAL_MINUTES, MAX_UPDATE_INTERVAL_MINUTES)
 
     fun authorityForMode(mode: TravelMode): String = when (mode) {
         TravelMode.DRIVING -> AUTHORITY_CAR
@@ -54,4 +61,16 @@ enum class TravelMode {
     DRIVING,
     WALKING,
     TRANSIT
+}
+
+/**
+ * What happens when the user taps the Complication. Each instance chooses its
+ * own behavior in the settings screen.
+ */
+enum class TapActionMode {
+    /** Opens this Complication's settings screen (the classic behavior). */
+    SETTINGS,
+
+    /** Instantly refreshes the ETA without leaving the Smartspace. */
+    UPDATE_ETA
 }
