@@ -108,14 +108,14 @@
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/getKeyButton"
-                            style="?attr/materialButtonTextButtonStyle"
+                            style="?attr/borderlessButtonStyle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/get_api_key" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/apiDocsButton"
-                            style="?attr/materialButtonTextButtonStyle"
+                            style="?attr/borderlessButtonStyle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/api_docs" />
@@ -216,7 +216,7 @@
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/open2GisButton"
-                            style="?attr/materialButtonTextButtonStyle"
+                            style="?attr/borderlessButtonStyle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/open_2gis_map"
