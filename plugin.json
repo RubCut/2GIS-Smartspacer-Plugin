@@ -1,8 +1,8 @@
 {
-	"description": "Adds two types of complications. They allow you to view the time in minutes and hours to any address/coordinates via the 2GIS API. Designed for countries supported by 2GIS (primarily the CIS and South America).",
-	"download_url": "https://github.com/RubCut/2GIS-Smartspacer-Plugin/releases/download/Realese/2GIS-Smartspacer-plugin-V1.apk",
-	"version_code": 1,
-	"changelog": "Read all information on github.",
+	"description": "Adds three types of complications. They allow you to view the time in minutes and hours to any address/coordinates via the 2GIS API. Designed for countries supported by 2GIS (primarily the CIS and South America).",
+	"download_url": "https://github.com/RubCut/2GIS-Smartspacer-Plugin/releases/download/V1/2GIS-Smartspacer-plugin-V1_1.apk",
+	"version_code": 2,
+	"changelog": "- Added chose of what to do when clicked on compilation, by default it's settings of compilation but you can change it to Update ETA instead!\n- Design updated with more Material 3 Expressive elements!\n- Fixed some bugs.\n\nWarning! To update it you need uninstall previous version! If you don't wanna lose settings do not open Smartspacer app after uninstall of previous version!",
 	"required_package": "com.kieronquinn.app.smartspacer",
 	"minimum_smartspacer_version": 0,
 	"screenshots": ["https://www.dropbox.com/scl/fi/djv5dz5gusbq1zsegr2pq/photo_2026-09-02_21-37-10.jpg?rlkey=st8i20njrvy9l2v3abv7eo59e&st=a7rzk3u8&dl=1", "https://www.dropbox.com/scl/fi/g59p3i5ejj3twgk6nr6i1/photo_2026-09-02_21-37-18.jpg?rlkey=35n9fd98jis0jtdgec7x529lg&st=jzo4a5fm&dl=1"]
