@@ -27,6 +27,7 @@ abstract class BaseEtaComplication(
         val context = provideContext()
         // Settings belong to this exact Complication instance.
         val settings = SettingsRepository(context).forComplication(smartspacerId)
+        val tapAction = settings.tapAction
         val minutes = settings.getEtaMinutes(mode)
         val content = when {
             !settings.isConfigured -> context.getString(
@@ -40,11 +41,16 @@ abstract class BaseEtaComplication(
 
         return listOf(
             ComplicationTemplate.Basic(
-                id = "eta_${mode.name.lowercase()}_$smartspacerId",
+                // The chosen tap target is part of the action identity. Smartspacer
+                // matches the rendered action by this id, so when the user switches
+                // from "Settings" to "Update ETA" (and back) the id changes and the
+                // new onClick intent is bound; otherwise the tap would keep firing the
+                // previously stored (Settings) intent.
+                id = "eta_${mode.name.lowercase()}_${tapAction.name.lowercase()}_$smartspacerId",
                 icon = Icon(AndroidIcon.createWithResource(context, iconRes), shouldTint = true),
                 content = Text(content),
                 onClick = TapAction(
-                    intent = Intent(context, tapTarget(settings.tapAction)).apply {
+                    intent = Intent(context, tapTarget(tapAction)).apply {
                         putExtra(SmartspacerConstants.EXTRA_SMARTSPACER_ID, smartspacerId)
                         putExtra(
                             SmartspacerConstants.EXTRA_AUTHORITY,
